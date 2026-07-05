@@ -1,8 +1,5 @@
 # Live Poll — Soroban Smart Contract dApp
 
-# Live demo link
-
-
 A one-question poll dApp built for **Level 2 – Yellow Belt**. Anyone can connect one of
 several Stellar wallets, vote once on a poll option, and watch results update live —
 all backed by a Soroban smart contract deployed on Stellar Testnet.
@@ -134,8 +131,8 @@ stellar contract invoke \
 ### 6. (Optional) Sanity-check the deployment from the CLI
 
 ```bash
-stellar contract invoke --id <YOUR_CONTRACT_ID> --source alice --network testnet -- get_question
-stellar contract invoke --id <YOUR_CONTRACT_ID> --source alice --network testnet -- get_results
+stellar contract invoke --id <CCYSUICIXXG4DG6AIR5UXH2D4GZC5H33DOMQ3XTE3QYSMEYKRETIBX52> --source alice --network testnet -- get_question
+stellar contract invoke --id <CCYSUICIXXG4DG6AIR5UXH2D4GZC5H33DOMQ3XTE3QYSMEYKRETIBX52> --source alice --network testnet -- get_results
 ```
 
 ---
@@ -202,13 +199,13 @@ npm run preview
 
 > Save these in a `screenshots/` folder and update the paths.
 
-#### Wallet options available
+#### 1. Wallet options available
 ![Wallet options](./screenshots/wallet_options.png)
 
-#### Poll with live results
+#### 2. Poll with live results
 ![Poll results](./screenshots/Deployed_contract.png)
 
-#### Successful vote transaction
+#### 3. Successful vote transaction
 ![Vote success](./screenshots/Transaction_hash.png)
 
 ## Notes
