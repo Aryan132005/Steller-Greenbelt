@@ -1119,3 +1119,129 @@ a:focus-visible {
     gap: 6px;
   }
 }
+
+/* ---------- Transaction Status Card & Hash Styling ---------- */
+.tx-status-card {
+  position: relative;
+  overflow: hidden;
+  border-width: 2px !important;
+}
+.tx-status-card.pending {
+  border-color: var(--lumen);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(242, 193, 78, 0.04) 100%);
+}
+.tx-status-card.success {
+  border-color: var(--teal);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(78, 205, 196, 0.04) 100%);
+}
+.tx-status-card.error {
+  border-color: var(--danger);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(255, 107, 107, 0.04) 100%);
+}
+
+.tx-status-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.tx-status-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  flex-grow: 1;
+}
+.tx-status-header .close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tx-status-header .close-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.orb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.orb.busy {
+  background: var(--lumen);
+  box-shadow: 0 0 10px var(--lumen);
+  animation: pulse-glow-orb 1.5s infinite;
+}
+.orb.live {
+  background: var(--teal);
+  box-shadow: 0 0 10px var(--teal);
+}
+.orb.error {
+  background: var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+@keyframes pulse-glow-orb {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.tx-status-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.tx-hash-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.tx-hash-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.tx-hash-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  word-break: break-all;
+  white-space: normal;
+  line-height: 1.4;
+}
+.explorer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal);
+  transition: opacity 0.2s;
+}
+.explorer-link:hover {
+  opacity: 0.8;
+}
