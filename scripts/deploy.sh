@@ -1,26 +1,25 @@
 #!/bin/bash
 set -e
 
-echo "Building contracts..."
-stellar contract build
+echo "Verifying WASM files..."
 
 echo "Getting deployer address..."
 ADMIN_ADDRESS=$(stellar keys address alice)
 echo "Admin Address: $ADMIN_ADDRESS"
 
 # Testnet Native XLM Token Address
-NATIVE_XLM="CDLZFC3SYJYDZT7KKAVGWCRHWCOJD2EW4SFTE67TIMW5STE6W64CO6RE"
+NATIVE_XLM="CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
 
 echo "Deploying reputation_token..."
-REP_ID=$(stellar contract deploy --wasm target/wasm32-unknown-unknown/release/reputation_token.wasm --source alice --network testnet)
+REP_ID=$(stellar contract deploy --wasm contract/target/wasm32v1-none/release/reputation_token.wasm --source alice --network testnet)
 echo "Reputation Token ID: $REP_ID"
 
 echo "Deploying treasury_contract..."
-TREASURY_ID=$(stellar contract deploy --wasm target/wasm32-unknown-unknown/release/treasury_contract.wasm --source alice --network testnet)
+TREASURY_ID=$(stellar contract deploy --wasm contract/target/wasm32v1-none/release/treasury_contract.wasm --source alice --network testnet)
 echo "Treasury Contract ID: $TREASURY_ID"
 
 echo "Deploying proposal_contract..."
-PROPOSAL_ID=$(stellar contract deploy --wasm target/wasm32-unknown-unknown/release/proposal_contract.wasm --source alice --network testnet)
+PROPOSAL_ID=$(stellar contract deploy --wasm contract/target/wasm32v1-none/release/proposal_contract.wasm --source alice --network testnet)
 echo "Proposal Contract ID: $PROPOSAL_ID"
 
 echo "Initializing reputation_token..."

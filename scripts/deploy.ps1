@@ -1,25 +1,24 @@
 $ErrorActionPreference = "Stop"
 
-Write-Host "Building contracts..."
-stellar contract build
+Write-Host "Verifying WASM files..."
 
 Write-Host "Getting deployer address..."
 $ADMIN_ADDRESS = (stellar keys address alice).Trim()
 Write-Host "Admin Address: $ADMIN_ADDRESS"
 
 # Testnet Native XLM Token Address
-$NATIVE_XLM = "CDLZFC3SYJYDZT7KKAVGWCRHWCOJD2EW4SFTE67TIMW5STE6W64CO6RE"
+$NATIVE_XLM = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
 
 Write-Host "Deploying reputation_token..."
-$REP_ID = (stellar contract deploy --wasm target/wasm32-unknown-unknown/release/reputation_token.wasm --source alice --network testnet).Trim()
+$REP_ID = (stellar contract deploy --wasm contract/target/wasm32v1-none/release/reputation_token.wasm --source alice --network testnet).Trim()
 Write-Host "Reputation Token ID: $REP_ID"
 
 Write-Host "Deploying treasury_contract..."
-$TREASURY_ID = (stellar contract deploy --wasm target/wasm32-unknown-unknown/release/treasury_contract.wasm --source alice --network testnet).Trim()
+$TREASURY_ID = (stellar contract deploy --wasm contract/target/wasm32v1-none/release/treasury_contract.wasm --source alice --network testnet).Trim()
 Write-Host "Treasury Contract ID: $TREASURY_ID"
 
 Write-Host "Deploying proposal_contract..."
-$PROPOSAL_ID = (stellar contract deploy --wasm target/wasm32-unknown-unknown/release/proposal_contract.wasm --source alice --network testnet).Trim()
+$PROPOSAL_ID = (stellar contract deploy --wasm contract/target/wasm32v1-none/release/proposal_contract.wasm --source alice --network testnet).Trim()
 Write-Host "Proposal Contract ID: $PROPOSAL_ID"
 
 Write-Host "Initializing reputation_token..."
