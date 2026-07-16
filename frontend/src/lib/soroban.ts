@@ -158,7 +158,7 @@ export async function getProposals(sourcePublicKey: string): Promise<Proposal[]>
         creator: p.creator,
         title: p.title,
         description: p.description,
-        requestedAmount: Number(p.requested_amount),
+        requestedAmount: Number(p.requested_amount) / 10_000_000,
         recipient: p.recipient,
         startLedger: Number(p.start_ledger),
         votingDeadlineLedger: Number(p.voting_deadline_ledger),
@@ -220,7 +220,7 @@ export async function buildCreateProposalTransaction(
       new Address(voterPublicKey).toScVal(),
       nativeToScVal(title, { type: 'string' }),
       nativeToScVal(description, { type: 'string' }),
-      nativeToScVal(requestedAmount, { type: 'i128' }),
+      nativeToScVal(requestedAmount * 10_000_000, { type: 'i128' }),
       new Address(recipient).toScVal(),
       nativeToScVal(deadlineLedger, { type: 'u32' }),
     ],
@@ -282,7 +282,7 @@ export async function getReputationBalance(
 export async function getTreasuryBalance(sourcePublicKey: string): Promise<number> {
   try {
     const balance = await simulateRead(TREASURY_CONTRACT_ID, 'get_balance', [], sourcePublicKey);
-    return Number(balance);
+    return Number(balance) / 10_000_000;
   } catch (err) {
     console.warn('Failed to fetch treasury balance, using 0:', err);
     return 0;
@@ -301,7 +301,7 @@ export async function getDisbursementHistory(sourcePublicKey: string): Promise<D
     return history.map((record: any) => ({
       proposalId: Number(record.proposal_id),
       recipient: record.recipient,
-      amount: Number(record.amount),
+      amount: Number(record.amount) / 10_000_000,
       ledgerSequence: Number(record.ledger_sequence),
     }));
   } catch (err) {
@@ -317,7 +317,7 @@ export async function buildDepositTransaction(
   return buildTransaction(
     TREASURY_CONTRACT_ID,
     'deposit',
-    [new Address(depositorPublicKey).toScVal(), nativeToScVal(amount, { type: 'i128' })],
+    [new Address(depositorPublicKey).toScVal(), nativeToScVal(amount * 10_000_000, { type: 'i128' })],
     depositorPublicKey
   );
 }
