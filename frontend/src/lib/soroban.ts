@@ -8,7 +8,9 @@ import {
   rpc,
 } from '@stellar/stellar-sdk';
 import {
-  CONTRACT_ID,
+  PROPOSAL_CONTRACT_ID,
+  REPUTATION_TOKEN_ID,
+  TREASURY_CONTRACT_ID,
   SOROBAN_RPC_URL,
   NETWORK_PASSPHRASE,
 } from './contractConfig';
@@ -17,23 +19,46 @@ export const server = new rpc.Server(SOROBAN_RPC_URL);
 
 export class ContractCallError extends Error {}
 
-export type PollResult = { label: string; votes: number };
+export interface Proposal {
+  id: number;
+  creator: string;
+  title: string;
+  description: string;
+  requestedAmount: number;
+  recipient: string;
+  startLedger: number;
+  votingDeadlineLedger: number;
+  supportVotes: number;
+  opposeVotes: number;
+  closed: boolean;
+  approved: boolean;
+  userVoted?: boolean;
+  userWeight?: number;
+}
 
-/**
- * Build a transaction, simulate it, and decode the return value —
- * used for read-only contract calls (get_question, get_results, has_voted).
- * `sourcePublicKey` only supplies a sequence-number envelope for the
- * simulation; nothing is signed or submitted for reads.
- */
-async function simulateRead(method: string, args: unknown[], sourcePublicKey: string) {
+export interface Disbursement {
+  proposalId: number;
+  recipient: string;
+  amount: number;
+  ledgerSequence: number;
+}
+
+// --- Generic Simulators and builders ---
+
+async function simulateRead(
+  contractId: string,
+  method: string,
+  args: any[],
+  sourcePublicKey: string
+): Promise<any> {
   const account = await server.getAccount(sourcePublicKey);
-  const contract = new Contract(CONTRACT_ID);
+  const contract = new Contract(contractId);
 
   const tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    .addOperation(contract.call(method, ...(args as any)))
+    .addOperation(contract.call(method, ...args))
     .setTimeout(30)
     .build();
 
@@ -50,45 +75,20 @@ async function simulateRead(method: string, args: unknown[], sourcePublicKey: st
   return scValToNative(simulated.result.retval);
 }
 
-export async function getQuestion(sourcePublicKey: string): Promise<string> {
-  return simulateRead('get_question', [], sourcePublicKey);
-}
-
-export async function getResults(sourcePublicKey: string): Promise<PollResult[]> {
-  const raw = await simulateRead('get_results', [], sourcePublicKey);
-  // raw is an array of [string, bigint] tuples once decoded from ScVal.
-  return (raw as [string, bigint][]).map(([label, votes]) => ({
-    label,
-    votes: Number(votes),
-  }));
-}
-
-export async function hasVoted(sourcePublicKey: string, voter: string): Promise<boolean> {
-  const addressArg = new Address(voter).toScVal();
-  return simulateRead('has_voted', [addressArg], sourcePublicKey);
-}
-
-/**
- * Build an unsigned, fee-and-footprint-prepared "vote" transaction ready for
- * wallet signing. Throws ContractCallError with a readable message if the
- * simulation itself already rejects the call (e.g. already voted, invalid
- * option index) so the caller doesn't need a wallet round-trip to find out.
- */
-export async function buildVoteTransaction(
-  voterPublicKey: string,
-  optionIndex: number
+async function buildTransaction(
+  contractId: string,
+  method: string,
+  args: any[],
+  sourcePublicKey: string
 ): Promise<string> {
-  const account = await server.getAccount(voterPublicKey);
-  const contract = new Contract(CONTRACT_ID);
-
-  const voterArg = new Address(voterPublicKey).toScVal();
-  const optionArg = nativeToScVal(optionIndex, { type: 'u32' });
+  const account = await server.getAccount(sourcePublicKey);
+  const contract = new Contract(contractId);
 
   const tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    .addOperation(contract.call('vote', voterArg, optionArg))
+    .addOperation(contract.call(method, ...args))
     .setTimeout(60)
     .build();
 
@@ -96,8 +96,9 @@ export async function buildVoteTransaction(
   return prepared.toXDR();
 }
 
-/** Submit a signed "vote" transaction and wait for it to land. */
-export async function submitVoteTransaction(signedXdr: string): Promise<string> {
+// --- Submission ---
+
+export async function submitTransaction(signedXdr: string): Promise<string> {
   const tx = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
   const sendResult = await server.sendTransaction(tx);
 
@@ -110,7 +111,6 @@ export async function submitVoteTransaction(signedXdr: string): Promise<string> 
 
   const hash = sendResult.hash;
 
-  // Poll for the final status — Soroban confirmations aren't instant.
   let attempts = 0;
   while (attempts < 15) {
     await new Promise((r) => setTimeout(r, 1500));
@@ -131,12 +131,223 @@ export async function submitVoteTransaction(signedXdr: string): Promise<string> 
   throw new ContractCallError('Timed out waiting for transaction confirmation.');
 }
 
-/** Turn common Soroban panic strings into plain-language messages. */
+// --- Proposal Contract Calls ---
+
+export async function getProposals(sourcePublicKey: string): Promise<Proposal[]> {
+  try {
+    const raw = await simulateRead(PROPOSAL_CONTRACT_ID, 'list_proposals', [], sourcePublicKey);
+    const list = raw as any[];
+    const proposals: Proposal[] = [];
+
+    for (const p of list) {
+      const id = Number(p.id);
+      let userVoted = false;
+      let userWeight = 0;
+
+      if (sourcePublicKey) {
+        try {
+          userVoted = await hasVoted(sourcePublicKey, sourcePublicKey, id);
+          userWeight = await getVoteWeight(sourcePublicKey, sourcePublicKey, id);
+        } catch (e) {
+          console.warn('Failed to fetch user vote state for proposal', id, e);
+        }
+      }
+
+      proposals.push({
+        id,
+        creator: p.creator,
+        title: p.title,
+        description: p.description,
+        requestedAmount: Number(p.requested_amount),
+        recipient: p.recipient,
+        startLedger: Number(p.start_ledger),
+        votingDeadlineLedger: Number(p.voting_deadline_ledger),
+        supportVotes: Number(p.support_votes),
+        opposeVotes: Number(p.oppose_votes),
+        closed: p.closed,
+        approved: p.approved,
+        userVoted,
+        userWeight,
+      });
+    }
+
+    return proposals.sort((a, b) => b.id - a.id);
+  } catch (error) {
+    console.error('Error fetching proposals:', error);
+    throw error;
+  }
+}
+
+export async function hasVoted(
+  sourcePublicKey: string,
+  voter: string,
+  proposalId: number
+): Promise<boolean> {
+  return simulateRead(
+    PROPOSAL_CONTRACT_ID,
+    'has_voted',
+    [new Address(voter).toScVal(), nativeToScVal(proposalId, { type: 'u32' })],
+    sourcePublicKey
+  );
+}
+
+export async function getVoteWeight(
+  sourcePublicKey: string,
+  voter: string,
+  proposalId: number
+): Promise<number> {
+  const weight = await simulateRead(
+    PROPOSAL_CONTRACT_ID,
+    'get_vote_weight',
+    [new Address(voter).toScVal(), nativeToScVal(proposalId, { type: 'u32' })],
+    sourcePublicKey
+  );
+  return Number(weight);
+}
+
+export async function buildCreateProposalTransaction(
+  voterPublicKey: string,
+  title: string,
+  description: string,
+  requestedAmount: number,
+  recipient: string,
+  deadlineLedger: number
+): Promise<string> {
+  return buildTransaction(
+    PROPOSAL_CONTRACT_ID,
+    'create_proposal',
+    [
+      new Address(voterPublicKey).toScVal(),
+      nativeToScVal(title, { type: 'string' }),
+      nativeToScVal(description, { type: 'string' }),
+      nativeToScVal(requestedAmount, { type: 'i128' }),
+      new Address(recipient).toScVal(),
+      nativeToScVal(deadlineLedger, { type: 'u32' }),
+    ],
+    voterPublicKey
+  );
+}
+
+export async function buildVoteTransaction(
+  voterPublicKey: string,
+  proposalId: number,
+  support: boolean
+): Promise<string> {
+  return buildTransaction(
+    PROPOSAL_CONTRACT_ID,
+    'vote',
+    [
+      new Address(voterPublicKey).toScVal(),
+      nativeToScVal(proposalId, { type: 'u32' }),
+      nativeToScVal(support),
+    ],
+    voterPublicKey
+  );
+}
+
+export async function buildCloseProposalTransaction(
+  voterPublicKey: string,
+  proposalId: number
+): Promise<string> {
+  return buildTransaction(
+    PROPOSAL_CONTRACT_ID,
+    'close_proposal',
+    [nativeToScVal(proposalId, { type: 'u32' })],
+    voterPublicKey
+  );
+}
+
+// --- Reputation Token Calls ---
+
+export async function getReputationBalance(
+  sourcePublicKey: string,
+  voter: string
+): Promise<number> {
+  try {
+    const bal = await simulateRead(
+      REPUTATION_TOKEN_ID,
+      'balance',
+      [new Address(voter).toScVal()],
+      sourcePublicKey
+    );
+    return Number(bal);
+  } catch (err) {
+    console.warn('Failed to fetch reputation balance, using 0:', err);
+    return 0;
+  }
+}
+
+// --- Treasury Contract Calls ---
+
+export async function getTreasuryBalance(sourcePublicKey: string): Promise<number> {
+  try {
+    const balance = await simulateRead(TREASURY_CONTRACT_ID, 'get_balance', [], sourcePublicKey);
+    return Number(balance);
+  } catch (err) {
+    console.warn('Failed to fetch treasury balance, using 0:', err);
+    return 0;
+  }
+}
+
+export async function getDisbursementHistory(sourcePublicKey: string): Promise<Disbursement[]> {
+  try {
+    const raw = await simulateRead(
+      TREASURY_CONTRACT_ID,
+      'get_disbursement_history',
+      [],
+      sourcePublicKey
+    );
+    const history = raw as any[];
+    return history.map((record: any) => ({
+      proposalId: Number(record.proposal_id),
+      recipient: record.recipient,
+      amount: Number(record.amount),
+      ledgerSequence: Number(record.ledger_sequence),
+    }));
+  } catch (err) {
+    console.error('Failed to fetch disbursement history:', err);
+    return [];
+  }
+}
+
+export async function buildDepositTransaction(
+  depositorPublicKey: string,
+  amount: number
+): Promise<string> {
+  return buildTransaction(
+    TREASURY_CONTRACT_ID,
+    'deposit',
+    [new Address(depositorPublicKey).toScVal(), nativeToScVal(amount, { type: 'i128' })],
+    depositorPublicKey
+  );
+}
+
+// --- Helper Utilities ---
+
 function describeSorobanError(raw?: string | null): string | null {
   if (!raw) return null;
-  if (raw.includes('already voted')) return 'This address has already voted in this poll.';
-  if (raw.includes('invalid option')) return 'That option no longer exists on the poll.';
-  if (raw.includes('not initialized')) return 'The poll contract has not been initialized yet.';
+  const lowercase = raw.toLowerCase();
+  if (lowercase.includes('already voted')) {
+    return 'Already Voted: You have already cast a vote on this proposal.';
+  }
+  if (lowercase.includes('already disbursed')) {
+    return 'Idempotency Guard: Funds have already been disbursed for this proposal.';
+  }
+  if (lowercase.includes('insufficient balance')) {
+    return 'Insufficient Balance: The treasury does not have enough funds to disburse.';
+  }
+  if (lowercase.includes('voting deadline passed') || lowercase.includes('deadline passed')) {
+    return 'Voting Deadline Passed: The voting period for this proposal has ended.';
+  }
+  if (lowercase.includes('voting deadline not reached') || lowercase.includes('deadline not reached')) {
+    return 'Voting Open: The proposal deadline has not been reached yet.';
+  }
+  if (lowercase.includes('proposal closed')) {
+    return 'Proposal Closed: This proposal has already been closed.';
+  }
+  if (lowercase.includes('invalid deadline')) {
+    return 'Invalid Deadline: The deadline ledger must be in the future.';
+  }
   return null;
 }
 
@@ -144,24 +355,32 @@ export function explorerTxUrl(hash: string): string {
   return `https://stellar.expert/explorer/testnet/tx/${hash}`;
 }
 
-/**
- * Fetch recent "vote" events emitted by the contract, for a lightweight
- * real-time signal in addition to (or instead of) polling get_results().
- */
-export async function getRecentVoteEvents(startLedger: number) {
-  const events = await server.getEvents({
-    startLedger,
-    filters: [
-      {
-        type: 'contract',
-        contractIds: [CONTRACT_ID],
-      },
-    ],
-  });
-  return events.events;
+export function explorerContractUrl(contractId: string): string {
+  return `https://stellar.expert/explorer/testnet/contract/${contractId}`;
 }
 
 export async function getLatestLedgerSequence(): Promise<number> {
-  const latest = await server.getLatestLedger();
-  return latest.sequence;
+  try {
+    const latest = await server.getLatestLedger();
+    return latest.sequence;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getRecentVoteEvents(startLedger: number) {
+  try {
+    const events = await server.getEvents({
+      startLedger,
+      filters: [
+        {
+          type: 'contract',
+          contractIds: [PROPOSAL_CONTRACT_ID],
+        },
+      ],
+    });
+    return events.events;
+  } catch {
+    return [];
+  }
 }

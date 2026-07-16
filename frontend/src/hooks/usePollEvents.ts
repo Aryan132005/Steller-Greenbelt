@@ -5,18 +5,18 @@ import { getRecentVoteEvents, getLatestLedgerSequence } from '../lib/soroban';
 export type VoteEvent = {
   id: string;
   ledger: number;
-  optionIndex: number;
-  newCount: number;
+  proposalId: number;
+  voter: string;
+  weight: number;
 };
 
-const LEDGER_LOOKBACK = 200; // roughly the last ~15-20 minutes on testnet
+const LEDGER_LOOKBACK = 100; // roughly the last ~10 minutes on testnet
 
 /**
  * Polls Soroban's getEvents for recent "vote" events emitted by the contract,
- * giving the UI a lightweight activity feed independent of re-fetching full
- * poll results.
+ * giving the UI a lightweight activity feed independent of re-fetching full results.
  */
-export function usePollEvents(enabled: boolean, intervalMs = 8000) {
+export function usePollEvents(enabled: boolean, intervalMs = 10000) {
   const [events, setEvents] = useState<VoteEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
@@ -41,12 +41,23 @@ export function usePollEvents(enabled: boolean, intervalMs = 8000) {
           seenIds.current.add(id);
 
           try {
-            const nativeValue = scValToNative(evt.value);
-            const optionIndex = Number(nativeValue?.[0] ?? -1);
-            const newCount = Number(nativeValue?.[1] ?? 0);
-            fresh.push({ id, ledger: evt.ledger, optionIndex, newCount });
-          } catch {
-            // Skip events we can't decode rather than break the whole feed.
+            // evt.topic: [Symbol("vote"), u32(proposalId), Address(voter)]
+            // evt.value: i128(weight)
+            if (evt.topic && evt.topic.length >= 3) {
+              const proposalId = Number(scValToNative(evt.topic[1]));
+              const voter = String(scValToNative(evt.topic[2]));
+              const weight = Number(scValToNative(evt.value));
+
+              fresh.push({
+                id,
+                ledger: evt.ledger,
+                proposalId,
+                voter,
+                weight,
+              });
+            }
+          } catch (e) {
+            console.warn('Failed to parse event:', evt, e);
           }
         }
 

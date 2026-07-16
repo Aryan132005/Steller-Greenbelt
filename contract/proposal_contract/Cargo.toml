@@ -12,3 +12,5 @@ soroban-sdk = "20.5.0"
 
 [dev-dependencies]
 soroban-sdk = { version = "20.5.0", features = ["testutils"] }
+reputation_token = { path = "../reputation_token", features = ["testutils"] }
+treasury_contract = { path = "../treasury_contract", features = ["testutils"] }

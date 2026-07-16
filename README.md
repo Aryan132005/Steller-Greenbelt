@@ -1,236 +1,124 @@
-# Live Poll — Soroban Smart Contract dApp
+# GrantPulse — Reputation-Weighted Community Micro-Grants Platform
 
-A one-question poll dApp built for **Level 2 – Yellow Belt**. Anyone can connect one of
-several Stellar wallets, vote once on a poll option, and watch results update live —
-all backed by a Soroban smart contract deployed on Stellar Testnet.
+GrantPulse is a production-ready community micro-grants MVP built on Stellar's Soroban smart contract framework. It upgrades the Level 2/3 voting mechanism into an integrated, governance-to-disbursement ecosystem. 
 
-## How it works
-
-- The poll's question, options, and vote tallies live entirely on-chain in a Soroban
-  contract (`contract/`).
-- The frontend (`frontend/`) reads the current question and results, lets a connected
-  wallet cast one vote per address, and polls for updates so everyone watching sees new
-  votes without refreshing the page.
-- A contract event is emitted on every vote, and the frontend also polls Soroban's
-  event stream to drive a small live activity feed.
-
-## Features
-
-- **Multi-wallet support** via `StellarWalletsKit` — Freighter, xBull, and Albedo
-- **3 handled error types**: wallet not installed, signature/connection rejected by the
-  user, insufficient balance for the transaction fee (plus contract-level errors like
-  double-voting or an invalid option)
-- **Read from the contract**: poll question, live results, whether the connected
-  address has already voted
-- **Write to the contract**: cast a vote, signed by the connected wallet and submitted
-  to Soroban testnet
-- **Real-time sync**: results re-fetch on an interval, and a separate contract-event
-  poll feeds a live activity list
-- **Transaction status tracking**: idle → building → signing → submitting → success
-  (with hash + explorer link) / error (with reason)
-
-## Tech stack
-
-- **Contract**: Rust + [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 20.x
-- **Frontend**: React 18 + TypeScript + Vite
-- [`@creit.tech/stellar-wallets-kit`](https://www.npmjs.com/package/@creit.tech/stellar-wallets-kit) —
-  multi-wallet connect/sign
-- [`@stellar/stellar-sdk`](https://www.npmjs.com/package/@stellar/stellar-sdk) —
-  building, simulating, and submitting Soroban transactions, and reading contract events
-- Stellar **Testnet** (Soroban RPC: `https://soroban-testnet.stellar.org`)
-
-## Project structure
-
-```
-contract/
-  Cargo.toml
-  src/lib.rs        Contract logic: initialize, vote, get_question, get_results, has_voted
-  src/test.rs       Unit tests (initialize, vote, double-vote, invalid option, tally)
-frontend/
-  src/components/
-    WalletConnect.tsx      Multi-wallet connect/disconnect + error display
-    PollCard.tsx           Question, options, live results
-    VoteButton.tsx         Single option with live percentage bar
-    TransactionStatus.tsx  Pending/success/error feedback + explorer link
-    ActivityFeed.tsx       Live feed of vote events
-  src/hooks/
-    useWallet.ts          StellarWalletsKit connection state + error classification
-    usePollContract.ts    Reads, interval polling, vote submission
-    usePollEvents.ts       Soroban event polling for the activity feed
-  src/lib/
-    contractConfig.ts     Deployed contract ID + RPC URLs (fill in after deploy)
-    soroban.ts             Simulate/build/submit helpers
-  src/App.tsx
-```
+Communities pool funds into an on-chain treasury, submit funding proposals, and vote. Crucially, votes are weighted by each voter's on-chain reputation token balance (not a flat one-address-one-vote). Passing proposals automatically trigger disbursements from the treasury, and voting awards voters with +1 REP token to incentivize active governance participation.
 
 ---
 
-## Part 1 — Build and deploy the contract
+## 📸 Interface Preview (User Placeholders)
+
+> [!NOTE]
+> The screenshots below are placeholders. Copy your actual screenshots into the `./screenshots/` directory matching the filenames below before final submission.
+
+- **Onboarding walkthrough & wallet setup:**
+  ![Onboarding Walkthrough](./screenshots/onboarding.png)
+- **Active and closed proposal dashboard with live vote progress:**
+  ![Proposals Dashboard](./screenshots/proposals.png)
+- **Treasury pool balance, XLM deposit portal, and disbursement history logs:**
+  ![Treasury Dashboard](./screenshots/treasury.png)
+- **Submit Proposal form with real-time balance and G-address validation:**
+  ![Create Proposal Form](./screenshots/create_proposal.png)
+- **Contextual rating & suggestion feedback widget:**
+  ![Feedback Widget](./screenshots/feedback.png)
+
+---
+
+## 🛠️ The Three-Contract Smart Contract System
+
+GrantPulse is composed of three interconnected smart contracts under the `contract/` workspace directory:
+
+1. **`reputation_token` (SEP-41 Compliance + Snapshotting):**
+   - Implements the Stellar SEP-41 token standard.
+   - Restricts minting privileges exclusively to the `proposal_contract`.
+   - Records historical balances at specific ledger sequences to prevent double-spending or mid-vote voting power manipulation.
+2. **`proposal_contract` (Reputation-Weighted Governance):**
+   - Manages the proposal lifecycle (create, vote, close, disburse).
+   - Queries historical balances of voters at `start_ledger` of proposals to compute voting weights.
+   - Minting reward: awards voters +1 REP token upon casting a vote to build long-term reputation.
+   - Closes proposals after their deadline sequences, executing cross-contract calls to disburse funds if approved.
+3. **`treasury_contract` (Decentralized Asset Escrow):**
+   - Holds shared community funds (deposits of native XLM tokens).
+   - Disbursement restriction: Only the authorized `proposal_contract` address can initiate disbursement.
+   - Idempotency guard: enforces that a proposal ID can only disburse funds once.
+
+---
+
+## 💻 Production-Ready React Frontend
+
+Our frontend (`frontend/`) is upgraded with the following production features:
+
+- **Performance & Code-Splitting:** Heavy modules (Stellar SDK/Wallets Kit) are code-split. The Treasury tab is lazy-loaded, ensuring the initial load bundle is under budget.
+- **RPC Polling Debouncing:** Debounces and batches polling requests into single aggregated requests to prevent RPC endpoint overload.
+- **Onboarding Walkthrough:** Interactive tooltip/onboarding cards walk users through reputation mechanics and double-voting defenses.
+- **Validation Rules:** The "Submit Proposal" form checks requested amounts against the current treasury balance, checks G-address formatting, and ensures deadlines are set in the future.
+- **Actionable Error Taxonomy:** Detailed error states handle missing wallet extensions, user-rejections, insufficient gas fees, closed proposals, and underfunded treasury disbursements.
+- **Lightweight Feedback Widget:** Slimes in contextually after the user's first successful vote or proposal creation, persisting feedback to a local mock database.
+- **Telemetry & Error Boundary:** Simple wrappers simulate Plausible/PostHog analytics event logging and Sentry crash exception reporting. A custom Sentry Error Boundary prevents white screens on runtime errors.
+
+---
+
+## 🚀 Build, Test, and Deploy Guide
 
 ### Prerequisites
+- Rust and `wasm32-unknown-unknown` target.
+- Stellar CLI: `cargo install --locked stellar-cli`
+- Node.js (v20.x+)
 
-- Rust (`rustup` recommended): https://www.rust-lang.org/tools/install
-- The `wasm32-unknown-unknown` target: `rustup target add wasm32-unknown-unknown`
-- Stellar CLI (includes the Soroban contract tooling):
-  ```bash
-  cargo install --locked stellar-cli --features opt
-  ```
-
-### 1. Run the unit tests
-
+### 1. Run Smart Contract Tests
+Run all 11 unit and integration tests across the workspace:
 ```bash
 cd contract
 cargo test
 ```
+All tests should compile and pass successfully, confirming that proposal state changes, snapshots, reputation minting rewards, and treasury disbursement loops function perfectly.
 
-You should see 6 tests pass: initialize, double-initialize rejection, a successful
-vote, double-vote rejection, invalid-option rejection, and multi-voter tallying.
-
-### 2. Build the contract to WASM
-
-```bash
-stellar contract build
-```
-
-This produces `target/wasm32-unknown-unknown/release/live_poll_contract.wasm`.
-
-### 3. Create and fund a testnet identity
-
+### 2. Deploy and Initialize (Testnet)
+Make sure you have a Stellar testnet identity `alice` configured in the Stellar CLI:
 ```bash
 stellar keys generate alice --network testnet
 stellar keys fund alice --network testnet
 ```
 
-### 4. Deploy to testnet
+Use our automated deployment scripts under the `scripts/` folder:
+- **Windows (PowerShell):**
+  ```powershell
+  pwsh ./scripts/deploy.ps1
+  ```
+- **macOS / Linux (Shell):**
+  ```bash
+  chmod +x ./scripts/deploy.sh
+  ./scripts/deploy.sh
+  ```
+The script will build all contracts, deploy them to the Testnet in dependency order, wire them together with their respective initialization parameters, and print their final contract IDs.
 
-```bash
-stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/live_poll_contract.wasm \
-  --source alice \
-  --network testnet
+### 3. Configure the React App
+Open `frontend/src/lib/contractConfig.ts` and replace the placeholder IDs with the printed contract IDs:
+```typescript
+export const REPUTATION_TOKEN_ID = 'YOUR_REP_TOKEN_CONTRACT_ID';
+export const TREASURY_CONTRACT_ID = 'YOUR_TREASURY_CONTRACT_ID';
+export const PROPOSAL_CONTRACT_ID = 'YOUR_PROPOSAL_CONTRACT_ID';
 ```
 
-This prints a **contract ID** (starts with `C...`). Copy it — you'll need it in two
-places:
-
-1. `frontend/src/lib/contractConfig.ts` → `CONTRACT_ID`
-2. The **Deployed contract address** section below, for submission
-
-### 5. Initialize the poll (one-time)
-
-```bash
-stellar contract invoke \
-  --id <YOUR_CONTRACT_ID> \
-  --source alice \
-  --network testnet \
-  -- initialize \
-  --question "What should we build next?" \
-  --options '["A wallet", "A DEX", "An NFT minter"]'
-```
-
-### 6. (Optional) Sanity-check the deployment from the CLI
-
-```bash
-stellar contract invoke --id <CCYSUICIXXG4DG6AIR5UXH2D4GZC5H33DOMQ3XTE3QYSMEYKRETIBX52> --source alice --network testnet -- get_question
-stellar contract invoke --id <CCYSUICIXXG4DG6AIR5UXH2D4GZC5H33DOMQ3XTE3QYSMEYKRETIBX52> --source alice --network testnet -- get_results
-```
-
----
-
-## Part 2 — Run the frontend
-
-### 1. Configure the contract ID
-
-Open `frontend/src/lib/contractConfig.ts` and replace the placeholder:
-
-```ts
-export const CONTRACT_ID = 'CCYSUICIXXG4DG6AIR5UXH2D4GZC5H33DOMQ3XTE3QYSMEYKRETIBX52';
-```
-
-### 2. Install and run
-
+### 4. Run the React App
 ```bash
 cd frontend
-npm install
+npm install --ignore-scripts
 npm run dev
 ```
-
-Open the printed local URL. Have at least one of Freighter, xBull, or Albedo installed
-and set to **Testnet**.
-
-### 3. Vote
-
-1. Click **Connect Wallet** and pick a wallet from the modal.
-2. The poll question and live results load from the contract.
-3. Click an option to vote — approve the signature request in your wallet.
-4. Watch the status card move through building → signing → submitting → confirmed,
-   then see your vote reflected in the results and the live activity feed.
-
-### Build for production
-
+Open `http://localhost:5173` to test the MVP.
+To compile the production build:
 ```bash
 npm run build
-npm run preview
 ```
 
 ---
 
-## Error handling (3+ types)
+## 🔒 Extended Error Taxonomy
 
-| Error type | Where it's triggered | User-facing message |
-|---|---|---|
-| Wallet not installed | Picking a wallet in the modal that isn't available in the browser | "That wallet extension isn't installed. Install it and try again." |
-| Signature/connection rejected | User closes the wallet's connect or sign prompt | "The request was rejected in the wallet." |
-| Insufficient balance | Account doesn't have enough XLM to cover the network fee | "This account doesn't have enough XLM to cover the transaction fee." |
-| Already voted / invalid option (contract-level) | The `vote` call itself rejects a second vote or a bad option index | Plain-language message decoded from the contract's panic reason |
-
----
-
-## Submission details
-
-> Fill these in before submitting.
-
-- **Deployed contract address**: `CCTFI2IDX65TLC37BGTW6QDKNKT3RRIE3ZL6KZ4L5OCKZSKAQT2XS7IZ`
-- **Transaction hash of a contract call**: `d44a1195b7d6f75549ff901e27b1c81d0ff3388566060f756d7c7ad0e56619c9` — verify at
-  `https://stellar.expert/explorer/testnet/tx/d44a1195b7d6f75549ff901e27b1c81d0ff3388566060f756d7c7ad0e56619c9`
-- **Live demo link** (optional): _add your Vercel/Netlify URL here if deployed_
-
-### Screenshots
-
-> Save these in a `screenshots/` folder and update the paths.
-
-#### 1. Wallet options available
-![Wallet options](./screenshots/wallet_options.png)
-
-#### 2. Poll with live results
-![Poll results](./screenshots/Deployed_contract.png)
-
-#### 3. Successful vote transaction
-![Vote success](./screenshots/Transaction_hash.png)
-
-## Notes
-
-- This app only ever talks to **Stellar Testnet / Soroban Testnet RPC** — no mainnet
-  funds are involved.
-- All signing happens inside the user's chosen wallet extension; this app never has
-  access to private keys.
-- Suggested git history for this submission: one commit for the contract + tests, one
-  commit for the multi-wallet frontend and live sync — see the `Development Standards`
-  note below.
-
-### Suggested commit structure (2+ meaningful commits)
-
-```bash
-git init
-git add contract/
-git commit -m "Add Soroban live-poll contract with unit tests"
-
-git add frontend/
-git commit -m "Add multi-wallet frontend with real-time vote sync"
-
-git add README.md .gitignore
-git commit -m "Add project documentation and deployment instructions"
-
-git remote add origin https://github.com/<your-username>/live-poll-dapp.git
-git push -u origin main
-```
+- **`Wallet Not Installed`:** Triggers when Freighter, xBull, or Albedo are missing, advising on installation steps.
+- **`Transaction Rejected`:** Catches user cancelation popups during wallet signing.
+- **`Insufficient Gas`:** Catches underfunded accounts trying to execute actions.
+- **`Already Voted`:** Custom contract message caught and shown inside the proposal card.
+- **`Voting Deadline Passed`:** Restricts actions on proposals that have expired.
+- **`Treasury Insufficient Balance`:** Rejects creation of proposals requesting more than the treasury pool or blocks disbursement closures if underfunded.
