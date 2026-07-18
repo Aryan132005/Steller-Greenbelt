@@ -136,14 +136,16 @@ export default function App() {
           onConnect={connect}
           onDisconnect={disconnect}
           onShowTour={() => setShowTour(true)}
+          onShowFeedback={() => setShowFeedback(true)}
         />
+
+        {/* Contextual Feedback Widget */}
+        {showFeedback && (
+          <FeedbackWidget onClose={() => setShowFeedback(false)} />
+        )}
 
         {isConnected && wallet.publicKey ? (
           <>
-            {/* Contextual Feedback Widget */}
-            {showFeedback && (
-              <FeedbackWidget onClose={() => setShowFeedback(false)} />
-            )}
 
             {/* Navigation Tabs */}
             <div className="nav-tabs-wrapper">

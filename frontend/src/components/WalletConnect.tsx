@@ -6,6 +6,7 @@ interface Props {
   onConnect: () => void;
   onDisconnect: () => void;
   onShowTour?: () => void;
+  onShowFeedback?: () => void;
 }
 
 function truncate(address: string): string {
@@ -19,6 +20,7 @@ export function WalletConnect({
   onConnect,
   onDisconnect,
   onShowTour,
+  onShowFeedback,
 }: Props) {
   const orbClass =
     wallet.status === 'connecting'
@@ -57,6 +59,15 @@ export function WalletConnect({
                 ❓ How it works
               </button>
             )}
+            {onShowFeedback && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={onShowFeedback}
+                title="Give Feedback"
+              >
+                💬 Feedback
+              </button>
+            )}
             <button className="btn btn-ghost btn-sm btn-disconnect" onClick={onDisconnect}>
               Disconnect
             </button>
@@ -77,13 +88,24 @@ export function WalletConnect({
         <p style={{ maxWidth: '440px', margin: '0 auto 20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
           A reputation-weighted community micro-grants platform. Connect your Stellar wallet to submit funding proposals, vote on community initiatives, and inspect the shared treasury.
         </p>
-        <button
-          className="btn btn-primary"
-          onClick={onConnect}
-          disabled={wallet.status === 'connecting'}
-        >
-          {wallet.status === 'connecting' ? 'Opening wallet selector…' : 'Connect Wallet'}
-        </button>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-primary"
+            onClick={onConnect}
+            disabled={wallet.status === 'connecting'}
+          >
+            {wallet.status === 'connecting' ? 'Opening wallet selector…' : 'Connect Wallet'}
+          </button>
+          {onShowFeedback && (
+            <button
+              className="btn btn-ghost"
+              onClick={onShowFeedback}
+              title="Give Feedback"
+            >
+              💬 Feedback
+            </button>
+          )}
+        </div>
         {wallet.status === 'error' && wallet.errorMessage && (
           <p className="field-error">
             {wallet.errorKind === 'not_found' && '🔌 '}
