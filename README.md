@@ -12,15 +12,15 @@ Communities pool funds into an on-chain treasury, submit funding proposals, and 
 > The screenshots below are placeholders. Copy your actual screenshots into the `./screenshots/` directory matching the filenames below before final submission.
 
 - **Onboarding walkthrough & wallet setup:**
-  ![Onboarding Walkthrough]![alt text](image.png)
+  ![Onboarding Walkthrough](./screenshots/onboarding.png)
 - **Active and closed proposal dashboard with live vote progress:**
-  ![Proposals Dashboard]![alt text](image-1.png)
+  ![Proposals Dashboard](./screenshots/proposals.png)
 - **Treasury pool balance, XLM deposit portal, and disbursement history logs:**
-  ![Treasury Dashboard]![alt text](image-2.png)
+  ![Treasury Dashboard](./screenshots/treasury.png)
 - **Submit Proposal form with real-time balance and G-address validation:**
-  ![Create Proposal Form]![alt text](image-3.png)
+  ![Create Proposal Form](./screenshots/create_proposal.png)
 - **Contextual rating & suggestion feedback widget:**
-  ![Feedback Widget]![alt text](image-4.png)
+  ![Feedback Widget](./screenshots/feedback.png)
 
 ---
 
