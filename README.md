@@ -47,9 +47,6 @@ Communities pool funds into an on-chain treasury, submit funding proposals, and 
 
 ## 📸 Interface Preview (User Placeholders)
 
-> [!NOTE]
-> The screenshots below are placeholders. Copy your actual screenshots into the `./screenshots/` directory matching the filenames below before final submission.
-
 - **Onboarding walkthrough & wallet setup:**
   ![Onboarding Walkthrough](./screenshots/onboarding.png)
 - **Active and closed proposal dashboard with live vote progress:**
