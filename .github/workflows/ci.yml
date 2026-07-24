@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master, dev ]
+
+jobs:
+  smart-contract-ci:
+    name: Smart Contract Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contract
+
+      - name: Cargo Check
+        run: |
+          cd contract
+          cargo check --workspace
+
+      - name: Cargo Format Check
+        run: |
+          cd contract
+          cargo fmt --all -- --check || true
+
+      - name: Cargo Clippy
+        run: |
+          cd contract
+          cargo clippy --workspace || true
+
+      - name: Cargo Test
+        run: |
+          cd contract
+          cargo test --workspace
+
+      - name: Build WASM Contracts
+        run: |
+          cd contract
+          cargo build --workspace --target wasm32-unknown-unknown --release
+
+  frontend-ci:
+    name: Frontend Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci || npm install
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm run build

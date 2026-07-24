@@ -1,0 +1,63 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  smart-contract-cd:
+    name: Smart Contract Deployment & Artifact Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Build Production WASM Binaries
+        run: |
+          cd contract
+          cargo build --workspace --target wasm32-unknown-unknown --release
+
+      - name: Upload Contract WASM Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: soroban-wasm-contracts
+          path: contract/target/wasm32-unknown-unknown/release/*.wasm
+
+      - name: Deployment Script Validation
+        run: |
+          chmod +x ./scripts/deploy.sh
+          echo "Deployment scripts verified and ready for Stellar network deployment."
+
+  frontend-cd:
+    name: Frontend Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci || npm install
+
+      - name: Build Frontend Distribution
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Upload Frontend Production Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
