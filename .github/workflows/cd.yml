@@ -13,9 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust Toolchain (1.80.1 for Soroban v20 compatibility)
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: 1.80.1
           targets: wasm32-unknown-unknown
 
       - name: Build Production WASM Binaries
