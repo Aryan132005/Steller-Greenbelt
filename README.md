@@ -6,6 +6,25 @@ https://steller-greenbelt.vercel.app/
 # Demo Video
 https://drive.google.com/file/d/1Yf6cf1fu9-1DvDQkdAjVXLoKymvCwMXy/view?usp=sharing
 
+## 📝 Feedback Form & Responses Sheet
+- **Google Form:** https://docs.google.com/forms/d/1kZ_JRraOBzF6l79yJUsF68TdDliFkn3j2D6gJ8kR2LU/edit
+- **Feedback Google Sheet:** https://docs.google.com/spreadsheets/d/1nq9eRDoZKDuj34KFTKEtaAlENeB5Rnn8kTYW9_ovZZE/edit?usp=sharing
+
+## 📋 10 User Feedback Summary
+
+| # | User Name | Gmail | Feedback Summary | Rating |
+|---|-----------|-------|------------------|--------|
+| 1 | **Abhishek kumar** | `ak0001076@gmail.com` | Excellent UI, seamless wallet connection, fast transactions, and fully clear reputation token mechanics. | 9-10 (Extremely Likely) |
+| 2 | **Rohit saw** | `rohit5747ss@gmail.com` | Very positive overall experience across UI, wallet setup, and proposal creation flows. | 7-8 (Likely) |
+| 3 | **Shikhar singh** | `Sikhar20076@gmail.com` | Positive experience; noted a minor wallet retry, slight transaction delay, and suggested clearer reputation token guidance. | 7-8 (Likely) |
+| 4 | **Vikrant verma** | `Vikrantver6383@gmail.com` | Outstanding overall experience. Smooth wallet connection, intuitive proposal flow, and fast contract speed. | 9-10 (Extremely Likely) |
+| 5 | **Ajay kumawat** | `kumawat528ajay@gmail.com` | Flawless experience with UI design, Freighter wallet connectivity, and proposal submission. | 9-10 (Extremely Likely) |
+| 6 | **Rohan raj** | `Rohan809raj@gmail.com` | Highly satisfied with the application UI, transaction speed, and reputation-weighted governance concept. | 9-10 (Extremely Likely) |
+| 7 | **Ritesh kant** | `Kushwaharitesh538@gmail.com` | Very smooth workflow, fast voting transactions, and excellent overall platform design. | 9-10 (Extremely Likely) |
+| 8 | **Shivam rai** | `Shivamrai63838@gmail.com` | Top rating across UI design, wallet integration, smart contract speed, and utility. | 9-10 (Extremely Likely) |
+| 9 | **Soni kumari** | `kumarisoni2001@gmail.com` | Excellent experience with seamless wallet integration and intuitive proposal creation. | 9-10 (Extremely Likely) |
+| 10 | **Sumit rawat** | `Rawatsabh2011@gmail.com` | Good & functional UI with easy proposal submission; experienced a minor initial delay during wallet connection. | 9-10 (Extremely Likely) |
+
 # ✅ Proof of 10+ User Wallet Interactions
 
 The following Stellar Testnet wallet addresses successfully interacted with the GrantPulse platform during testing. These interactions include proposal creation, voting, treasury operations, and reputation token distribution.
