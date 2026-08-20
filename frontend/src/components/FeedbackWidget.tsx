@@ -31,9 +31,9 @@ export function FeedbackWidget({ onClose }: Props) {
       };
 
       // Persist to local storage to simulate backend database storage
-      const existing = JSON.parse(localStorage.getItem('grantpulse_feedback') || '[]');
+      const existing = JSON.parse(localStorage.getItem('solaris_feedback') || '[]');
       existing.push(payload);
-      localStorage.setItem('grantpulse_feedback', JSON.stringify(existing));
+      localStorage.setItem('solaris_feedback', JSON.stringify(existing));
 
       // Mock event tracking
       if ((window as any).plausible) {
@@ -56,7 +56,7 @@ export function FeedbackWidget({ onClose }: Props) {
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
-          Your feedback was logged in the local platform state database. We appreciate your contribution to GrantPulse!
+          Your feedback was logged in the local platform state database. We appreciate your contribution to Solaris DAO!
         </p>
       </div>
     );

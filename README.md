@@ -4,7 +4,7 @@
 https://steller-greenbelt.vercel.app/
 
 # Demo Video
-https://drive.google.com/file/d/1Yf6cf1fu9-1DvDQkdAjVXLoKymvCwMXy/view?usp=sharing
+https://drive.google.com/file/d/1z0PX-XtpfFqsmLZndD8nGo5pZqjZNbyH/view?usp=sharing
 
 ## 📝 Feedback Form & Responses Sheet
 - **Google Form:** https://docs.google.com/forms/d/e/1FAIpQLSccp3bStvnHKZOl1AqUEioGOo8Uh_1gA5NVH1NaYKotI4KOHw/viewform?usp=sharing&ouid=113390190658527259116
@@ -67,15 +67,13 @@ Communities pool funds into an on-chain treasury, submit funding proposals, and 
 ## 📸 Interface Preview (User Placeholders)
 
 - **Onboarding walkthrough & wallet setup:**
-  ![Onboarding Walkthrough](./screenshots/onboarding.png)
+  ![Onboarding Walkthrough](![alt text](image.png))
 - **Active and closed proposal dashboard with live vote progress:**
-  ![Proposals Dashboard](./screenshots/proposals.png)
+  ![Proposals Dashboard](![alt text](image-2.png).png)
 - **Treasury pool balance, XLM deposit portal, and disbursement history logs:**
-  ![Treasury Dashboard](./screenshots/treasury.png)
-- **Submit Proposal form with real-time balance and G-address validation:**
-  ![Create Proposal Form](./screenshots/create_proposal.png)
+  ![Treasury Dashboard](![alt text](image-1.png))
 - **Contextual rating & suggestion feedback widget:**
-  ![Feedback Widget](./screenshots/feedback.png)
+  ![Feedback Widget](![alt text](image-3.png).png)
 
 ---
 

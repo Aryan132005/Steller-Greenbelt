@@ -43,7 +43,6 @@ export function WalletConnect({
             <span className="wallet-address">{truncate(wallet.publicKey)}</span>
             <div className="wallet-meta">
               <span className="wallet-provider">{wallet.walletName}</span>
-              <span className="divider">•</span>
               <span className="rep-badge">
                 🏆 <strong>{reputationBalance} REP</strong>
               </span>
@@ -74,7 +73,7 @@ export function WalletConnect({
           </div>
         </div>
         <div className="weight-explanation-banner">
-          💡 <strong>Reputation Weight:</strong> Your voting weight is determined by your REP balance at the start of each proposal. Voting awards <strong>+1 REP</strong>!
+          💡 <strong>Voting Weight:</strong> Your weight is determined by your REP balance when a proposal starts. Voting awards <strong>+1 REP</strong>!
         </div>
       </div>
     );
@@ -84,23 +83,25 @@ export function WalletConnect({
     <div className="card">
       <div className="empty-state">
         <span className={orbClass} aria-hidden="true" style={{ margin: '0 auto 14px' }} />
-        <h2>Welcome to GrantPulse</h2>
-        <p style={{ maxWidth: '440px', margin: '0 auto 20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-          A reputation-weighted community micro-grants platform. Connect your Stellar wallet to submit funding proposals, vote on community initiatives, and inspect the shared treasury.
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginTop: 0, marginBottom: 8 }}>Enter Solaris DAO</h2>
+        <p style={{ maxWidth: '440px', margin: '0 auto 20px', fontSize: '13px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
+          A reputation-weighted community governance vault. Connect your Stellar wallet to submit funding proposals, vote on community initiatives, and audit treasury payouts.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
             className="btn btn-primary"
             onClick={onConnect}
             disabled={wallet.status === 'connecting'}
+            style={{ padding: '10px 18px', fontSize: '13px' }}
           >
-            {wallet.status === 'connecting' ? 'Opening wallet selector…' : 'Connect Wallet'}
+            {wallet.status === 'connecting' ? 'Connecting wallet...' : 'Connect Wallet'}
           </button>
           {onShowFeedback && (
             <button
               className="btn btn-ghost"
               onClick={onShowFeedback}
               title="Give Feedback"
+              style={{ padding: '10px 18px', fontSize: '13px' }}
             >
               💬 Feedback
             </button>

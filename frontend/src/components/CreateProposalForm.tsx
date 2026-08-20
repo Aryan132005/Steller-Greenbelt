@@ -164,7 +164,7 @@ export function CreateProposalForm({
           disabled={isSubmitting}
           style={{ marginTop: 12 }}
         >
-          {isSubmitting ? 'Simulating & signing transaction…' : '🚀 Submit Proposal on Chain'}
+          {isSubmitting ? 'Signing transaction...' : '🚀 Submit Proposal to Vault'}
         </button>
       </form>
     </div>
