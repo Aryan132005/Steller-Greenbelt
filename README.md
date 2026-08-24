@@ -1,4 +1,4 @@
-# GrantPulse — Reputation-Weighted Community Micro-Grants Platform
+# Solaris DAO — Reputation-Weighted Community Micro-Grants Platform
 
 # Live Demo
 https://steller-greenbelt.vercel.app/
@@ -27,7 +27,7 @@ https://drive.google.com/file/d/1z0PX-XtpfFqsmLZndD8nGo5pZqjZNbyH/view?usp=shari
 
 # ✅ Proof of 10+ User Wallet Interactions
 
-The following Stellar Testnet wallet addresses successfully interacted with the GrantPulse platform during testing. These interactions include proposal creation, voting, treasury operations, and reputation token distribution.
+The following Stellar Testnet wallet addresses successfully interacted with the Solaris DAO platform during testing. These interactions include proposal creation, voting, treasury operations, and reputation token distribution.
 
 | # | Wallet Address | Transaction ID |
 |---|----------------|----------------|
@@ -45,7 +45,7 @@ The following Stellar Testnet wallet addresses successfully interacted with the 
 
 ### Verification
 
-These transactions demonstrate successful interaction of **11 unique Stellar Testnet wallets** with the GrantPulse decentralized application.
+These transactions demonstrate successful interaction of **11 unique Stellar Testnet wallets** with the Solaris DAO decentralized application.
 
 Verified interaction types include:
 
@@ -58,7 +58,7 @@ Verified interaction types include:
 
 This satisfies the requirement of demonstrating **10+ independent user wallet interactions** for the project.
 
-GrantPulse is a production-ready community micro-grants MVP built on Stellar's Soroban smart contract framework. It upgrades the Level 2/3 voting mechanism into an integrated, governance-to-disbursement ecosystem. 
+Solaris DAO is a production-ready community micro-grants MVP built on Stellar's Soroban smart contract framework. It upgrades the Level 2/3 voting mechanism into an integrated, governance-to-disbursement ecosystem. 
 
 Communities pool funds into an on-chain treasury, submit funding proposals, and vote. Crucially, votes are weighted by each voter's on-chain reputation token balance (not a flat one-address-one-vote). Passing proposals automatically trigger disbursements from the treasury, and voting awards voters with +1 REP token to incentivize active governance participation.
 
@@ -67,19 +67,19 @@ Communities pool funds into an on-chain treasury, submit funding proposals, and 
 ## 📸 Interface Preview (User Placeholders)
 
 - **Onboarding walkthrough & wallet setup:**
-  ![Onboarding Walkthrough](![alt text](image.png))
+  ![Onboarding Walkthrough](image.png)
 - **Active and closed proposal dashboard with live vote progress:**
-  ![Proposals Dashboard](![alt text](image-2.png).png)
+  ![Proposals Dashboard](image-2.png)
 - **Treasury pool balance, XLM deposit portal, and disbursement history logs:**
-  ![Treasury Dashboard](![alt text](image-1.png))
+  ![Treasury Dashboard](image-1.png)
 - **Contextual rating & suggestion feedback widget:**
-  ![Feedback Widget](![alt text](image-3.png).png)
+  ![Feedback Widget](image-3.png)
 
 ---
 
 ## 🛠️ The Three-Contract Smart Contract System
 
-GrantPulse is composed of three interconnected smart contracts under the `contract/` workspace directory:
+Solaris DAO is composed of three interconnected smart contracts under the `contract/` workspace directory:
 
 1. **`reputation_token` (SEP-41 Compliance + Snapshotting):**
    - Implements the Stellar SEP-41 token standard.
@@ -101,7 +101,7 @@ GrantPulse is composed of three interconnected smart contracts under the `contra
 
 Our frontend (`frontend/`) is upgraded with the following production features:
 
-- **Performance & Code-Splitting:** Heavy modules (Stellar SDK/Wallets Kit) are code-split. The Treasury tab is lazy-loaded, ensuring the initial load bundle is under budget.
+- **Performance & Code-Splitting:** Heavy modules (Stellar SDK/Wallets Kit) are code-split to optimize the initial bundle size and page load performance.
 - **RPC Polling Debouncing:** Debounces and batches polling requests into single aggregated requests to prevent RPC endpoint overload.
 - **Onboarding Walkthrough:** Interactive tooltip/onboarding cards walk users through reputation mechanics and double-voting defenses.
 - **Validation Rules:** The "Submit Proposal" form checks requested amounts against the current treasury balance, checks G-address formatting, and ensures deadlines are set in the future.

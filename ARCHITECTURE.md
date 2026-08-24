@@ -1,6 +1,6 @@
-# GrantPulse Architecture Spec
+# Solaris DAO Architecture Spec
 
-This document details the smart contract structure, state storage layouts, and interaction flows for the GrantPulse reputation-weighted micro-grants platform.
+This document details the smart contract structure, state storage layouts, and interaction flows for the Solaris DAO reputation-weighted micro-grants platform.
 
 ---
 
